@@ -1,0 +1,162 @@
+#######################################################################
+
+	#       #    #     #    # # #         # # #        #
+	# #   # #     #   #    #     #      #       #      #
+	#  # #  #      # #      #          #         #     #
+	#   #   #       #         #       #           #    #
+	#       #       #          #      #           #    #
+	#       #       #           #      #      #  #     #
+	#       #       #     #     #       #       #      #
+	#       #       #      # # #          # # #   #    # # # # #
+	
+#######################################################################
+
+Instructions on how to run:
+First command -> make
+Next command -> ./parser < input.txt (To take input from file named input.txt) or
+		./parser (To take user input)
+
+#######################################################################
+
+Default values if not mentioned any thing;
+	data type -> string
+	primary key -> false
+	constraint -> NULL
+
+Limitations:
+	NOTNULL is specified as constraint without space between NOT and NULL
+	"somestring" -> something can be a number,[A-Za-z_][A-Za-z0-9_]* but  can't be [A-Za-z0-9_]+
+	all predefined terminals like select,from,where etc., should be in small letters only
+	only two data types are allowed -> string,int
+	more than one level select statements won't work(i.e., nested statements)
+	In select and delete statement only condition is handled
+#######################################################################
+
+"dbms.l"
+
+terminals like create,select,from,where etc., are returned from this file to "dbms.y" file
+
+
+"dbms.y"
+temp_list      ->  Pointer to list of databases created (global variable)
+curr_database  ->  Name of current database being used
+
+Statements that have been implemented in the parser:
+
+create statement:
+	case 1:
+		create database name;
+			For this statement it checks if the database with the name is already present or not
+				if !present
+					creates a database with the current name;
+					and inserts into the temp_list;
+				else
+					displays "Database already present"
+	case 2:
+		create table name(attributes_st);
+			For this statement it checks if the table is already present in the currently used database
+				if !present
+					creates a table with the name and structure specified by the attributes_st
+					where attributes_st have info of name of attribute,data_type and NULL/NOTNULL
+				else
+					displays "Table already present"
+use statement:
+	use name;
+		For this statement it checks if the database specified by the name is already created or not
+			if created
+				makes curr_database = name
+			else
+				displays "No database present"
+
+delete statement:
+	delete from table where condition
+		For this statement it checks if the table is present or not
+			if present
+				selects all the rows that satisfy the condition and deletes them from the table
+			else
+				displays "No table found"
+
+insert statement:
+	insert into name values(attribute_values);
+		For this statement
+			checks if the table specified by name is present in the curr_database being used
+				if present
+					check the structure of attribute_values entered with the structure of the table
+						if matches
+							insert the attribute_values into the table
+							each attribute_value consists of two feilds(attr_val,data_type)
+							prints all the rows in the table
+						else
+							displays "INVALID"
+				else
+					displays "Table not present"
+
+select statement:
+	select * from tables
+		For this statement
+			checks if all the selected tables are present in the current database
+				if present
+					creates a table formed by the join of all the tables
+					prints the contents of all the tables
+				else
+					displays "table not found"
+	select * from tables where condition
+		For this statement
+			checks if all the selected tables are present in the current database
+				if present
+					creates a table formed by the join of all the tables
+					creates another table satisfying the condition in where statement
+					prints the contents of all the above table
+				else
+					displays "table not found"
+	select ids from tables
+		For this statement
+			checks if all the selected tables are present in the current database
+				if present
+					creates a table formed by the join of all the tables
+					selects the ids from the above table and creates a new table
+					prints the contents of the above table
+				else
+					displays "table not found"
+	select ids from tables where condition
+		For this statement
+			checks if all the selected tables are present in the current database
+				if present
+					creates a table formed by the join of all the tables
+					creates another table satisfying the condition in where statement
+					selects the ids from the above table and creates a new table
+					prints the contents of the newly table
+				else
+					displays "table not found"
+		
+
+describe statement:
+	describe name;
+		For this statement
+			checks if the table specified by name is present in current database or not
+				if present
+					prints the meta data of the tables
+				else
+					displays "table not present"
+
+show statement:
+	show name;
+		For this statement
+			if the name=databases
+				prints all the databases
+			else if name = tables
+				prints all the tables
+			else
+				displays "error"
+drop statement:
+	drop database name;
+		if database with name is present 
+			then deletes the whole database from the list of databases
+		else
+			displays "No database found"
+	drop table name;
+		if table with name is present 
+			then deletes the table from the list of tables from the current database that is used
+		else
+			displays "No table found"
+
